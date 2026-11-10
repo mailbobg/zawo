@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/macOS-Apple_Silicon-287653" alt="macOS Apple Silicon">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-287653" alt="MIT License"></a>
 </p>
-<p align="center"><a href="README.md">简体中文</a> · <a href="README.en.md">English</a> · <strong>Deutsch</strong></p>
+<p align="center"><a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <strong>Deutsch</strong></p>
 <p align="center"><a href="https://github.com/mailbobg/zawo/releases/latest">Herunterladen</a> · <a href="CHANGELOG.md">Änderungsprotokoll</a> · <a href="docs/DEVELOPMENT.md">Entwicklung</a> · <a href="https://github.com/mailbobg/zawo/issues">Fehler melden</a></p>
 
 Zawo vereint Hostverwaltung, geteilte Terminals, SFTP-Dateiübertragung, Portweiterleitungen und einen seitlichen Browser in einem Desktopfenster.
