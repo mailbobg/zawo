@@ -2,9 +2,22 @@
 
 <img src="assets/awzo.png" width="96" alt="Zawo icon">
 
-面向 macOS Apple 芯片的本地终端、SSH / SFTP 工作空间，带拖拽分屏、端口转发和右侧浏览器。
+面向 macOS Apple 芯片的本地终端与 SSH 工作空间。把主机管理、多终端分屏、SFTP 文件传输、端口转发和网页预览放在一个窗口中。
+
+Zawo 起步于一次使用 **[Craft Anything](https://github.com/storytold/craft-anything) 复刻 [Termius](https://termius.com/) 核心体验**的实践，随后逐步发展为可独立使用的本地应用。
 
 [下载最新版本](https://github.com/mailbobg/zawo/releases/latest) · [更新记录](CHANGELOG.md) · [开发与签名](docs/DEVELOPMENT.md)
+
+![Zawo 主机管理：本地终端、主机卡片、分组与跳板机](docs/screenshots/hosts.png)
+
+## 项目来源
+
+- **复刻参考：Termius。** 初期以 macOS 版 Termius 的可见界面与操作流程为参考，重建主机列表、右侧编辑面板、多标签终端、拖拽分屏、SFTP、端口转发和 Snippets 等常用功能。
+- **生成工具：Craft Anything。** 首版使用 Craft Anything CLI，通过 Codex CLI 执行 Study → Build → Check 流程，生成 Electron 应用、基础服务、测试和打包配置。后续持续对照实际操作补齐功能、修正交互，并进行真实终端、SSH / SFTP 和桌面应用验证。
+- **实现方式：独立实现。** 起步采用 Clean room 模式，依据界面观察和行为描述编写代码，未复制 Termius 的程序源码、品牌图标或用户数据。Zawo 不是 Termius 官方产品，也不承诺覆盖原版全部能力。
+- **后续设计。** 当前浅绿灰配色和连贯的左右栏参考 macOS Find My（查找）；右侧浏览器的布局与交互参考 Codex / Claude 桌面应用。软件使用自己的 Zawo 名称和图标。
+
+Craft Anything 帮助建立首版基础；当前版本还包含后续开发、测试、签名与公证工作，并非一次生成后未经验证的原型。
 
 ## 安装
 
@@ -14,14 +27,52 @@
 
 ## 功能
 
-- **本地与远程终端**：This Mac 直接启动本地 shell，无需开启 SSH；远程连接支持密码、私钥和多级跳板机。
-- **工作空间**：终端标签、鼠标拖拽分屏、焦点模式、查找、快捷键提示、显式开启的广播输入和布局模板。
-- **主机管理**：分组、标签、搜索、筛选、排序、密钥管理、已知主机校验与自动保存。
-- **SFTP**：本地 / 远程文件浏览、文件和目录传输、队列、取消、重试及权限编辑。
-- **端口转发**：本地、远程和动态 SOCKS5 转发，多级跳板机和可选断线重连。
-- **右侧浏览器**：多标签、后退 / 前进、地址或搜索、缩放、下载管理，以及从运行中的本地转发打开网页。
-- **CLI 浏览器入口**：本地命令和已启用权限的 SSH 会话可以打开 Zawo 浏览器；支持为 AI CLI 配置使用规则。
-- **备份与迁移**：加密配置备份、恢复、主机 JSON 导入 / 导出及 OpenSSH 配置迁移。
+| 功能 | 可以做什么 |
+|---|---|
+| 本地终端 | 从 **This Mac** 直接打开本地 shell，无需开启系统 SSH 服务 |
+| SSH 与跳板机 | 使用密码或私钥连接远程主机，支持多级跳板机、首次主机指纹确认和变更阻断 |
+| 多终端工作空间 | 多标签、拖拽分屏、调整窗格尺寸、焦点模式、终端查找、快捷键提示和布局模板 |
+| 主机管理 | 创建主机与分组，按标签筛选，搜索和排序；编辑自动保存 |
+| SFTP 文件管理 | 双栏浏览本地和远程文件，上传 / 下载文件与目录，管理传输队列、取消、重试和文件权限 |
+| 端口转发 | 本地 TCP、远程 TCP、动态 SOCKS5 转发，可配置断线重连，并从本地转发直接打开网页预览 |
+| 右侧浏览器 | 多标签、后退 / 前进、地址搜索、缩放和下载管理；按需打开，关闭后释放网页资源 |
+| AI CLI 联动 | `zawo browser open` 打开右侧浏览器；提供 Codex、Claude Code、Gemini CLI、OpenCode 的规则配置入口 |
+| 命令与凭据 | 保存 Snippets，复用密钥，查看 Known Hosts 和连接日志；可显式开启工作空间广播输入 |
+| 备份与迁移 | 加密配置备份与恢复、主机 JSON 导入 / 导出、OpenSSH 配置迁移 |
+
+## 功能截图
+
+以下为 **Zawo 1.16.2 实际运行截图**，使用隔离的演示配置、本机临时 SSH / SFTP 服务和示例文件。截图中的主机与文件不来自个人服务器；网页为经真实 SSH 转发加载的演示页面。
+
+### 多终端分屏
+
+将终端标签拖入工作区即可组合分屏。每个窗格运行独立会话，可调整尺寸，也可切换到单窗格焦点模式。
+
+![Zawo 多终端工作空间：两个独立 shell 并排运行](docs/screenshots/terminal-split.png)
+
+### 终端与右侧浏览器
+
+在终端旁预览本地或远程开发服务。浏览器默认关闭，手动点击或通过 CLI 调用时才打开；远程服务可通过 SSH 转发在本机预览。
+
+![Zawo 右侧浏览器：终端旁通过 SSH 转发打开项目预览](docs/screenshots/browser.png)
+
+### SFTP 双栏文件管理
+
+左侧选择本地目录，右侧连接远程主机。文件和目录可以通过操作菜单或拖拽传输，并在队列中查看进度。
+
+![Zawo SFTP：本地与已连接远程目录的双栏文件列表](docs/screenshots/sftp.png)
+
+### 端口转发
+
+保存转发规则，按需启动或停止。适用于通过 SSH 访问远程 Web 服务、数据库等 TCP 服务；本地 Web 转发支持直接打开右侧浏览器。
+
+![Zawo 端口转发：正在运行的本地 Web 预览转发规则](docs/screenshots/port-forwarding.png)
+
+### Snippets 常用命令
+
+将常用命令保存为片段，在需要时选择目标终端执行，减少重复输入。
+
+![Zawo Snippets：保存和管理常用终端命令](docs/screenshots/snippets.png)
 
 ## 打开右侧浏览器
 
@@ -86,6 +137,6 @@ npm run package
 
 ## 技术与许可证
 
-Electron 41.3.0、xterm.js、node-pty、ssh2、esbuild 和 electron-builder。项目起步参考 [Craft Anything](https://github.com/storytold/craft-anything) 的本地应用原型流程。
+Electron 41.3.0、xterm.js、node-pty、ssh2、esbuild 和 electron-builder。感谢 [Craft Anything](https://github.com/storytold/craft-anything) 提供应用生成工作流，以及 [Termius](https://termius.com/) 提供最初的功能与交互参考。
 
 项目采用 [MIT License](LICENSE)，第三方依赖遵循各自的许可证。

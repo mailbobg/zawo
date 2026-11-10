@@ -64,3 +64,14 @@ Before publishing, mount the final DMG read-only, verify the contained app and A
 ```
 
 The established bundle ID (`local.harbor.terminal`), private bundle/helper names and profile directory remain stable for upgrade compatibility. The display name is Zawo. Developer ID and notarization credentials are not required to run source tests or build an ad-hoc local app.
+
+## README screenshots
+
+To refresh the six feature screenshots on macOS:
+
+```sh
+npm run build
+env -u NODE_OPTIONS ./node_modules/.bin/electron scripts/capture-docs.cjs
+```
+
+This opens the real application with an isolated temporary profile, generated loopback SSH credentials, demo files and a local HTTP page served through SSH forwarding. It captures the native application window, including the embedded browser, to `docs/screenshots/`. Electron needs macOS Screen Recording permission. The script closes its sessions and removes the temporary data when finished; it does not use your saved hosts or installed application profile. Review every image before committing. The example gateway and staging host are display-only entries and are never contacted.
