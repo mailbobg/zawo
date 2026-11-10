@@ -1,0 +1,9 @@
+'use strict';
+const fs=require('node:fs/promises');const path=require('node:path');
+// Read-only directory metadata. File contents and writes stay behind native transfer dialogs.
+class LocalBrowser {
+ constructor(home){this.initial=home;this.roots=new Set();this.grants=new Map();this.ready=this.grant(home);}
+ async grant(directory){const root=await fs.realpath(directory);if(!(await fs.stat(root)).isDirectory())throw Error('Choose a directory');const st=await fs.stat(root);this.roots.add(root);this.grants.set(root,{real:root,dev:st.dev,ino:st.ino});return root;}
+ async list(directory,showHidden=false){await this.ready;if(directory!==undefined&&(typeof directory!=='string'||directory.length>4096||directory.includes('\0')))throw Error('Invalid local directory');const actual=await fs.realpath(directory||this.initial);const allowed=p=>[...this.roots].some(root=>{const relative=path.relative(root,p);return relative===''||(!path.isAbsolute(relative)&&relative!=='..'&&!relative.startsWith('..'+path.sep));});if(!allowed(actual))throw Error('Choose this folder with the folder picker first');const names=await fs.readdir(actual,{withFileTypes:true});const visible=names.filter(e=>showHidden||!e.name.startsWith('.'));const entries=[];for(let i=0;i<Math.min(visible.length,10000);i+=100){const batch=await Promise.all(visible.slice(i,Math.min(i+100,10000)).map(async e=>{try{const info=await fs.lstat(path.join(actual,e.name));return {name:e.name,isDirectory:info.isDirectory(),isLink:info.isSymbolicLink(),size:info.size,mode:info.mode,modified:Math.floor(info.mtimeMs/1000)};}catch{return null;}}));entries.push(...batch.filter(Boolean));}return {path:actual,parent:allowed(path.dirname(actual))?path.dirname(actual):null,entries:entries.sort((a,b)=>Number(b.isDirectory)-Number(a.isDirectory)||a.name.localeCompare(b.name)),truncated:visible.length>10000};}
+}
+module.exports={LocalBrowser};

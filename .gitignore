@@ -1,0 +1,31 @@
+# Dependencies and generated application bundles
+node_modules/
+dist/
+ui/
+assets/*.iconset/
+
+# Local verification output and disposable profiles
+logs/*
+!logs/.gitkeep
+shots/*
+!shots/.gitkeep
+artifacts/
+.capture-profile/
+.native-*/
+.capture-*/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Local credentials, signing material and configuration
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.p8
+*.pem
+*.key
+*.keychain
+*.keychain-db

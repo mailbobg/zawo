@@ -1,0 +1,6 @@
+'use strict';
+const {utils}=require('ssh2');const {createHash}=require('node:crypto');
+function inspectPrivateKey(credential,passphrase=''){if(typeof credential!=='string'||credential.length>65536||!credential.trim())throw Error('Enter a private key');if(typeof passphrase!=='string'||passphrase.length>4096)throw Error('Invalid key passphrase');const parsed=utils.parseKey(credential,passphrase||undefined);if(parsed instanceof Error)throw Error('Invalid private key or passphrase');const keys=Array.isArray(parsed)?parsed:[parsed];if(keys.length!==1||!keys[0].isPrivateKey())throw Error('Choose one private key');const k=keys[0],pub=k.getPublicSSH();return {type:k.type,publicKey:k.type+' '+pub.toString('base64'),fingerprint:'SHA256:'+createHash('sha256').update(pub).digest('base64').replace(/=+$/,'')};}
+// ssh2 may strip a leading zero from an Ed25519 public key. Never return malformed generated material.
+function generateKey(generate=()=>utils.generateKeyPairSync('ed25519')){for(let attempt=0;attempt<5;attempt++){const credential=generate().private;try{if(inspectPrivateKey(credential).type==='ssh-ed25519')return credential;}catch{}}throw Error('Could not generate a valid Ed25519 key. Try again.');}
+module.exports={inspectPrivateKey,generateKey};

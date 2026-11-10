@@ -1,0 +1,33 @@
+'use strict';
+const net=require('node:net');const {EventEmitter}=require('node:events');
+class Tunnels extends EventEmitter {
+ constructor(store,connector,options={}){super();this.store=store;this.connector=connector;this.options=options;this.items=new Map();}
+ snapshot(){return [...this.items.values()].map(s=>this.state(s));}
+ state(s){return {id:s.config.id,status:s.status,port:s.port||0,error:s.error||'',attempt:s.attempt||0};}
+ publish(s){this.emit('state',this.state(s));return this.state(s);}
+ active(id){return this.items.has(id)&&!['stopped','error'].includes(this.items.get(id).status);}
+ hostInUse(id){return [...this.items.values()].some(s=>this.active(s.config.id)&&s.hostIds.includes(id));}
+ async start(id,credentials={}){if(this.active(id))throw Error('Tunnel is already active');const config=this.store.getTunnel(id);const s={config,hostIds:this.store.chain(config.hostId).map(h=>h.id),credentials,status:'connecting',sockets:new Set(),attempt:0,cancelled:false};this.items.set(id,s);return this.open(s,false);}
+ async open(s,retry){s.status=retry?'reconnecting':'connecting';s.error='';s.controller=new AbortController();this.publish(s);
+  try{const lease=await this.connector.connect(s.config.hostId,s.credentials,{signal:s.controller.signal,confirmUnknown:!retry});if(s.cancelled){lease.close();return this.state(s);}s.lease=lease;lease.once('closed',e=>this.failed(s,e));const c=s.config;
+   if(c.type==='remote'){
+    lease.client.on('tcp connection',(info,accept,reject)=>{if(s.cancelled||info.destPort!==s.port||info.destIP!==c.bindAddress)return reject();const remote=this.track(s,accept());const local=this.track(s,net.connect({port:c.targetPort,host:c.targetAddress,allowHalfOpen:true}));local.once('connect',()=>this.pipe(local,remote));local.on('error',e=>{s.error=`Destination: ${e.message}`;this.publish(s);remote.destroy();});});
+    s.port=await new Promise((resolve,reject)=>{const closed=e=>reject(e);lease.once('closed',closed);lease.client.forwardIn(c.bindAddress,retry&&s.port?s.port:c.bindPort,(e,p)=>{lease.removeListener('closed',closed);e?reject(Object.assign(e,{code:'BIND'})):resolve(p||c.bindPort);});});
+   }else{
+    const server=net.createServer({allowHalfOpen:true},socket=>{this.track(s,socket);if(c.type==='dynamic')this.socks(s,socket);else this.forward(s,socket,c.targetAddress,c.targetPort);});s.server=server;
+    await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(retry&&s.port?s.port:c.bindPort,c.bindAddress,()=>{server.removeListener('error',reject);resolve();});});s.port=server.address().port;server.on('error',e=>this.failed(s,Object.assign(e,{code:'BIND'})));
+   }
+   if(s.cancelled||s.lease?.closed){this.cleanup(s);return this.state(s);}s.status='running';s.attempt=0;return this.publish(s);
+  }catch(e){if(!s.cancelled)this.failed(s,e);return this.state(s);}
+ }
+ track(s,socket){s.sockets.add(socket);socket.on('error',()=>socket.destroy());socket.on('close',()=>s.sockets.delete(socket));return socket;}
+ pipe(a,b){a.pipe(b).pipe(a);a.on('close',()=>b.destroy());b.on('close',()=>a.destroy());}
+ forward(s,socket,address,port,success){let finished=false;const timer=setTimeout(()=>{if(!finished){finished=true;socket.destroy();}},30000);socket.once('close',()=>{finished=true;clearTimeout(timer);});s.lease.client.forwardOut(socket.remoteAddress||'127.0.0.1',socket.remotePort||0,address,port,(e,ch)=>{clearTimeout(timer);if(finished||s.cancelled){ch?.destroy();return;}finished=true;if(e){s.error=`Destination ${address}:${port}: ${e.message}`;this.publish(s);if(success)socket.end(Buffer.from([5,5,0,1,0,0,0,0,0,0]));else socket.destroy();return;}this.track(s,ch);success?.();this.pipe(socket,ch);socket.resume();});}
+ socks(s,socket){let buffer=Buffer.alloc(0),stage=0;socket.setTimeout(15000,()=>socket.destroy());const fail=code=>{socket.removeListener('data',read);socket.end(Buffer.from([5,code,0,1,0,0,0,0,0,0]));};const read=data=>{buffer=Buffer.concat([buffer,data]);if(buffer.length>8192)return socket.destroy();if(stage===0){if(buffer.length<2)return;if(buffer[0]!==5)return socket.destroy();const n=buffer[1];if(buffer.length<2+n)return;if(!buffer.subarray(2,2+n).includes(0)){socket.end(Buffer.from([5,255]));return;}buffer=buffer.subarray(2+n);socket.write(Buffer.from([5,0]));stage=1;}
+    if(stage===1){if(buffer.length<4)return;if(buffer[0]!==5||buffer[2]!==0)return fail(1);if(buffer[1]!==1)return fail(7);let len,address,offset;if(buffer[3]===1){len=10;if(buffer.length<len)return;address=[...buffer.subarray(4,8)].join('.');offset=8;}else if(buffer[3]===3){if(buffer.length<5)return;len=7+buffer[4];if(buffer.length<len)return;address=buffer.subarray(5,len-2).toString('utf8');if(!/^[a-zA-Z0-9._-]+$/.test(address))return fail(8);offset=len-2;}else if(buffer[3]===4){len=22;if(buffer.length<len)return;address=Array.from({length:8},(_,i)=>buffer.readUInt16BE(4+2*i).toString(16)).join(':');offset=20;}else return fail(8);const port=buffer.readUInt16BE(offset);if(!port)return fail(1);stage=2;socket.pause();socket.removeListener('data',read);socket.setTimeout(0);const rest=buffer.subarray(len);if(rest.length)socket.unshift(rest);this.forward(s,socket,address,port,()=>socket.write(Buffer.from([5,0,0,1,0,0,0,0,0,0])));}};socket.on('data',read);}
+ cleanup(s){clearTimeout(s.timer);s.timer=null;s.controller?.abort();s.server?.close();s.server=null;for(const socket of s.sockets)socket.destroy();s.sockets.clear();s.lease?.removeAllListeners('closed');s.lease?.close();s.lease=null;}
+ failed(s,e){if(s.cancelled||s.failing)return;s.failing=true;this.cleanup(s);s.error=e.message;const retry=s.config.autoReconnect&&(!e.code||['TRANSPORT','ECONNRESET','ECONNREFUSED','ETIMEDOUT','EPIPE'].includes(e.code));if(retry){s.status='reconnecting';s.attempt++;s.timer=setTimeout(()=>{s.failing=false;this.open(s,true);},Math.min((this.options.retryDelay||1000)*2**Math.min(s.attempt-1,5),30000));}else{s.status='error';s.credentials={};s.failing=false;}this.publish(s);}
+ async stop(id){const s=this.items.get(id);if(!s)return;s.cancelled=true;s.status='stopping';this.publish(s);if(s.config.type==='remote'&&s.port&&s.lease&&!s.lease.closed){await new Promise(resolve=>{const client=s.lease.client;const done=()=>{clearTimeout(timer);client.removeListener('close',done);resolve();};const timer=setTimeout(done,2000);client.once('close',done);try{client.unforwardIn(s.config.bindAddress,s.port,done);}catch{done();}});}this.cleanup(s);s.credentials={};s.status='stopped';s.error='';return this.publish(s);}
+ closeAll(){for(const s of this.items.values()){s.cancelled=true;this.cleanup(s);s.credentials={};s.status='stopped';this.publish(s);}}
+}
+module.exports={Tunnels};

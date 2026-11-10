@@ -1,0 +1,8 @@
+const net=require('node:net');
+exports.attach=client=>{
+ const listeners=new Map(),sockets=new Set();
+ const track=s=>{sockets.add(s);s.on('error',()=>s.destroy());s.on('close',()=>sockets.delete(s));return s;};
+ client.on('tcpip',(accept,reject,info)=>{if(!['127.0.0.1','target.internal','0:0:0:0:0:0:0:1'].includes(info.destIP))return reject();const socket=track(net.connect(info.destPort,'127.0.0.1'));socket.once('error',reject);socket.once('connect',()=>{socket.removeListener('error',reject);const channel=track(accept());socket.pipe(channel).pipe(socket);channel.on('close',()=>socket.destroy());socket.on('close',()=>channel.destroy());});});
+ client.on('request',(accept,reject,name,info)=>{if(name==='tcpip-forward'){if(info.bindAddr!=='127.0.0.1')return reject();const server=net.createServer({allowHalfOpen:true},socket=>{track(socket);client.forwardOut(info.bindAddr,server.address().port,socket.remoteAddress,socket.remotePort,(e,ch)=>{if(e)return socket.destroy();track(ch);/* ssh2 server Channel.end() sends CLOSE; use EOF to model OpenSSH half-close. */socket.pipe(ch,{end:false});socket.on('end',()=>ch.eof());ch.pipe(socket);ch.on('close',()=>socket.destroy());socket.on('close',()=>ch.destroy());});});server.once('error',reject);server.listen(info.bindPort,info.bindAddr,()=>{listeners.set(server.address().port,server);accept(server.address().port);});}else if(name==='cancel-tcpip-forward'){const server=listeners.get(info.bindPort);if(!server)return reject();server.close();listeners.delete(info.bindPort);accept();}else reject?.();});
+ client.on('close',()=>{for(const s of sockets)s.destroy();for(const s of listeners.values())s.close();});
+};

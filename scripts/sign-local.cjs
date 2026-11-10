@@ -1,0 +1,10 @@
+'use strict';
+const {execFileSync} = require('node:child_process');
+const path = require('node:path');
+const fs = require('node:fs');
+if (process.platform !== 'darwin') throw new Error('Local macOS packaging requires macOS');
+const bundle = path.resolve(__dirname, '../dist/mac-arm64', require('../package.json').build.productName + '.app');
+require('./prepare-bundle.cjs')(bundle);
+execFileSync('/usr/bin/codesign', ['--force', '--deep', '--sign', '-', '--preserve-metadata=entitlements', bundle], {stdio: 'inherit'});
+execFileSync('/usr/bin/codesign', ['--verify', '--deep', '--strict', bundle], {stdio: 'inherit'});
+console.log('Local ad-hoc signature verified. This build is not notarized.');

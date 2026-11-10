@@ -1,0 +1,36 @@
+'use strict';
+const {randomUUID,createHash}=require('node:crypto');const {utils}=require('ssh2');const {validateHost}=require('./store.cjs');
+function lines(text){if(typeof text!=='string'||Buffer.byteLength(text)>5*1024*1024||text.includes('\0'))throw Error('Choose a text configuration up to 5 MB');const result=text.split(/\r?\n/);if(result.length>50000)throw Error('Too many configuration lines');return result;}
+function tokens(line){const out=[];let value='',quote='',escaped=false;for(const c of line){if(escaped){value+=c;escaped=false;continue;}if(c==='\\'){escaped=true;continue;}if(quote){if(c===quote)quote='';else value+=c;continue;}if(c==='"'||c==="'"){quote=c;continue;}if(c==='#')break;if(/\s/.test(c)){if(value){out.push(value);value='';}}else value+=c;}if(quote||escaped)throw Error('Unclosed quote or escape in SSH configuration');if(value)out.push(value);return out;}
+// Greedy wildcard matching with a shared work budget; never compile imported patterns as regex.
+function glob(pattern,value,budget){if(pattern.length>253)throw Error('SSH host pattern is too long; simplify it before importing');if(!/[?*]/.test(pattern))return pattern===value;let i=0,j=0,star=-1,retry=0;while(i<value.length){if(--budget.remaining<0)throw Error('SSH host patterns are too complex; split this configuration before importing');if(pattern[j]==='?'||pattern[j]===value[i]){i++;j++;}else if(pattern[j]==='*'){star=j++;retry=i;}else if(star>=0){j=star+1;i=++retry;}else return false;}while(pattern[j]==='*')j++;return j===pattern.length;}
+function matches(patterns,alias,budget){return !patterns.some(p=>p.startsWith('!')&&glob(p.slice(1),alias,budget))&&patterns.some(p=>!p.startsWith('!')&&glob(p,alias,budget));}
+function parseSSHConfig(text,defaultUser){
+ const budget={remaining:2000000};const warnings=[],blocks=[{patterns:['*'],values:{}}];let block=blocks[0];
+ for(const [i,line]of lines(text).entries()){
+  let parts;try{parts=tokens(line.trim().replace(/^(\w+)\s*=\s*/,'$1 '));}catch{warnings.push(`Line ${i+1}: invalid quoting; ignored`);continue;}if(!parts.length)continue;const keyword=parts.shift().toLowerCase(),value=parts.join(' ');
+  if(keyword==='host'){block={patterns:parts,values:{}};blocks.push(block);for(const p of parts)if(/[!?*]/.test(p)&&p!=='*')warnings.push(`Line ${i+1}: Host pattern ${p} applies only to explicit aliases in this file`);continue;}
+  if(keyword==='match'){warnings.push(`Line ${i+1}: Match block is not evaluated`);block=null;continue;}
+  if(keyword==='include'){warnings.push(`Line ${i+1}: Include is not read; import referenced files explicitly`);continue;}
+  if(!block)continue;if(!['hostname','user','port','proxyjump','identityfile','proxycommand'].includes(keyword)){warnings.push(`Line ${i+1}: ${keyword} is not supported and was not imported`);continue;}if(block.values[keyword]===undefined)block.values[keyword]=value;
+ }
+ const aliases=[...new Set(blocks.flatMap(b=>b.patterns.filter(p=>!/[!?*]/.test(p))))];if(aliases.length>5000)throw Error('Import supports up to 5,000 hosts');const candidates=[];
+ for(const alias of aliases){if(alias.length>160){warnings.push('Host alias longer than 160 characters skipped');continue;}const cfg={};for(const b of blocks)if(matches(b.patterns,alias,budget))for(const [k,v]of Object.entries(b.values))if(cfg[k]===undefined)cfg[k]=v;
+  if(cfg.proxycommand&&cfg.proxycommand.toLowerCase()!=='none'){warnings.push(`${alias}: ProxyCommand is not executed; host skipped to avoid an incorrect route`);continue;}
+  if(cfg.proxyjump&&cfg.proxyjump!=='none'&&/[,@:[\]]/.test(cfg.proxyjump)){warnings.push(`${alias}: only a single named ProxyJump alias is supported; host skipped`);continue;}
+  if(cfg.hostname?.includes('%')&&!require('node:net').isIP(cfg.hostname)){warnings.push(`${alias}: HostName token expansion is not supported; host skipped`);continue;}
+  if(cfg.identityfile)warnings.push(`${alias}: IdentityFile is not read; choose/import the private key in Keychain`);
+  try{const host=validateHost({id:randomUUID(),label:alias,address:cfg.hostname||alias,port:cfg.port||22,username:cfg.user||defaultUser,auth:cfg.identityfile?'key':'password'});candidates.push({...host,jumpAlias:cfg.proxyjump&&cfg.proxyjump!=='none'?cfg.proxyjump:''});}catch{warnings.push(`${alias}: unsupported or invalid address, username or port; host skipped`);}
+ }
+ let kept=candidates;let changed=true;while(changed){changed=false;kept=kept.filter(h=>{if(h.jumpAlias&&!kept.some(j=>j.label===h.jumpAlias)){warnings.push(`${h.label}: jump host ${h.jumpAlias} was not imported; host skipped`);changed=true;return false;}return true;});}
+ const hosts=kept.map(({jumpAlias,...h})=>({...h,jumpHostId:jumpAlias?kept.find(j=>j.label===jumpAlias).id:''}));
+ // Validate cycles before offering import; no attempt to repair connection routes silently.
+ for(const h of hosts){const seen=new Set();let cursor=h;while(cursor){if(seen.has(cursor.id)||seen.size>=8)throw Error('SSH configuration has a jump cycle or chain longer than eight hosts');seen.add(cursor.id);cursor=hosts.find(x=>x.id===cursor.jumpHostId);}}
+ return {data:{format:'harbor-hosts',version:1,groups:[],hosts},warnings:[...new Set(warnings)]};
+}
+function parseKnownHosts(text){const warnings=[],known=new Map(),conflicts=new Set(),revoked=new Set(),inputLines=lines(text);for(const line of inputLines){const p=line.trim().split(/\s+/);if(p[0]!=='@revoked')continue;const key=utils.parseKey(p[2]+' '+p[3]);if(key instanceof Error||Array.isArray(key))throw Error('Invalid revoked key; known_hosts import was blocked');revoked.add('SHA256:'+createHash('sha256').update(key.getPublicSSH()).digest('base64').replace(/=+$/,''));}for(const [i,line]of inputLines.entries()){
+ const value=line.trim();if(!value||value.startsWith('#'))continue;const parts=value.split(/\s+/);if(parts[0].startsWith('@')||parts[0].startsWith('|')){warnings.push(`Line ${i+1}: hashed or marked identity requires manual review; not imported`);continue;}if(parts.length<3){warnings.push(`Line ${i+1}: invalid known_hosts entry`);continue;}
+ const key=utils.parseKey(parts[1]+' '+parts[2]);if(key instanceof Error||Array.isArray(key)){warnings.push(`Line ${i+1}: unsupported public key`);continue;}const fingerprint='SHA256:'+createHash('sha256').update(key.getPublicSSH()).digest('base64').replace(/=+$/,'');
+ if(revoked.has(fingerprint)){warnings.push(`Line ${i+1}: revoked key excluded from trusted identities`);continue;}for(const raw of parts[0].split(',')){if(/[*!?]/.test(raw)){warnings.push(`Line ${i+1}: patterned hostname not imported`);continue;}let host=raw,port=22;const match=raw.match(/^\[([^\]]+)\]:(\d+)$/);if(match){host=match[1];port=Number(match[2]);}if(!/^[a-zA-Z0-9.:%_-]+$/.test(host)||host.startsWith('-')||!Number.isInteger(port)||port<1||port>65535){warnings.push(`Line ${i+1}: invalid endpoint`);continue;}const endpoint=host+':'+port;if(known.has(endpoint)&&known.get(endpoint).fingerprint!==fingerprint){conflicts.add(endpoint);warnings.push(`${endpoint}: multiple different keys require manual review; endpoint not imported`);}else known.set(endpoint,{endpoint,fingerprint});}
+ }return {data:{format:'harbor-known-hosts',version:1,known:[...known.values()].filter(k=>!conflicts.has(k.endpoint))},warnings:[...new Set(warnings)]};}
+module.exports={parseSSHConfig,parseKnownHosts};
