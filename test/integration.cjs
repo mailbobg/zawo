@@ -14,6 +14,7 @@ module.exports=async function run({safeStorage,root,window,applicationService,br
   await require('./delete-ui.cjs')({window,until,pass});
   await require('./local-host-ui.cjs')({window,until,pass,applicationService});
   await require('./palette-ui.cjs')({window,until,pass});
+  await require('./kaku-split-ui.cjs')({window,until,pass});
   await require('./autosave-ui.cjs')({window,until,pass});
   await require('./editor-field-states.cjs')({window,until,pass});
   await require('./editor-panels.cjs')({window,until,pass});

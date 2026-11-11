@@ -520,3 +520,37 @@ body[data-view=terminal][data-terminal-theme^=kaku-] .session-tab:hover {backgro
 .theme-cursor {display:inline-block;width:2px;height:1em;margin-left:4px;vertical-align:-2px}
 .theme-swatches {display:flex;gap:6px;margin-top:12px}
 .theme-swatches i {width:20px;height:10px;border-radius:3px}
+
+/* Kaku is a continuous terminal canvas, divided only at shared pane edges. */
+body[data-terminal-theme^=kaku-] #terminal-stage {padding:12px;gap:0}
+body[data-terminal-theme^=kaku-] #terminal-stage .terminal-pane {border:0;border-radius:0;box-shadow:none}
+body[data-terminal-theme^=kaku-] #terminal-stage .terminal-mount {padding:8px 12px}
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider.row {width:9px}
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider.column {height:9px}
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider:after {border-radius:0;background:var(--terminal-border)}
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider.row:after {inset:0 auto 0 4px;width:1px}
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider.column:after {inset:4px 0 auto;height:1px}
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider:hover:after,
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider:focus-visible:after {background:var(--terminal-accent)}
+body[data-terminal-theme^=kaku-] #terminal-stage .split-divider:focus-visible {outline:0}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header {position:absolute;z-index:3;top:4px;right:4px;width:150px;height:28px;min-height:28px;padding:0;overflow:visible;justify-content:flex-end;background:transparent}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-icon,
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-label,
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-path {display:none}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-state {display:block;position:absolute;right:9px;top:10px;width:5px;height:5px;background:var(--terminal-text);opacity:0}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-active .pane-state,
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-state.closed {opacity:1}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-state.closed {background:#d85d5d}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-actions {display:flex;background:var(--terminal-bg);border-radius:4px}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:hover>.pane-state,
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:focus-within>.pane-state,
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:has([aria-pressed=true])>.pane-state {opacity:0}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:focus-within>.pane-actions {opacity:1}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-reconnect {display:block;position:absolute;right:0;top:30px}
+body[data-terminal-theme^=kaku-] #terminal-stage .drop-target:after {border-radius:0}
+/* Join nested dividers into a continuous T instead of leaving a gap at the hit area. */
+body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split.row>.workspace-split.column:first-child>.split-divider.column:after {right:-5px}
+body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split.row>.workspace-split.column:last-child>.split-divider.column:after {left:-5px}
+body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split.column>.workspace-split.row:first-child>.split-divider.row:after {bottom:-5px}
+body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split.column>.workspace-split.row:last-child>.split-divider.row:after {top:-5px}
+body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split {overflow:visible}
