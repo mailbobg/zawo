@@ -567,3 +567,7 @@ body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-label {displ
 body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:hover>.pane-label,
 body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:focus-within>.pane-label,
 body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:has([aria-pressed=true])>.pane-label {right:170px}
+
+/* FitAddon reads the mount's computed width/height as usable terminal space.
+   Keep those values content-sized so pane padding never creates clipped rows. */
+.terminal-mount {box-sizing:content-box}
