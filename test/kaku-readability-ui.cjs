@@ -20,6 +20,6 @@ module.exports=async({window,applicationService,until,pass})=>{
   assert.doesNotMatch(await cursor(),/xterm-cursor-(outline|block|bar|underline)/,'inactive Kaku panes do not show hollow boxes');
   await js(`document.querySelector('.xterm-helper-textarea').focus()`);assert.match(await cursor(),/xterm-cursor-bar/);
  }
- await theme('green');await output('\x1b[0 q');assert.match(await cursor(),/xterm-cursor-block/,'other themes retain their block default');
+ await theme('dark');await output('\x1b[0 q');assert.match(await cursor(),/xterm-cursor-block/,'other themes retain their block default');
  await click('.pane-close');await until(()=>!applicationService.sessions.has(id));pass('Kaku truecolor and 256-color text contrast, cursor reset, explicit cursor and inactive-pane behavior');
 };

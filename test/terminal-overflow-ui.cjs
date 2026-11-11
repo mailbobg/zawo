@@ -15,12 +15,12 @@ module.exports=async({window,applicationService,root,until,pass,keepOpen=false})
   assert.ok(geometry.screenRight<=geometry.contentRight+1,`${value}: terminal column count must fit visible width`);
   assert.equal(geometry.mountScroll,0,'browser must not scroll the mount to reveal hidden cursor rows');
  };
- for(const value of ['kaku-light','kaku-dark','green','dark','light']){await theme(value);await check(id,value);}
+ for(const value of ['kaku-light','kaku-dark','dark','light']){await theme(value);await check(id,value);}
  await theme('kaku-light');await click('#new-tab');await click('#new-local-session');await until(()=>applicationService.sessions.size===2);await click('[data-tab]');
  await js(`(()=>{const source=document.querySelectorAll('.session-tab')[1],target=document.querySelector('.terminal-pane'),s=source.getBoundingClientRect(),t=target.getBoundingClientRect(),base={bubbles:true,pointerId:81,isPrimary:true,pointerType:'mouse',button:0};source.dispatchEvent(new PointerEvent('pointerdown',{...base,buttons:1,clientX:s.x+60,clientY:s.y+12}));document.dispatchEvent(new PointerEvent('pointerup',{...base,buttons:0,clientX:t.x+t.width/2,clientY:t.bottom-4}));})()`);
  await until(()=>js(`document.querySelectorAll('.terminal-pane').length===2`));window.setSize(760,480);await new Promise(r=>setTimeout(r,250));
  for(const session of applicationService.sessions.keys())await check(session,'resized Kaku split');
- pass('real ls output beyond one screen keeps final prompt cursor visible across five themes and resized split panes');
+ pass('real ls output beyond one screen keeps final prompt cursor visible across four themes and resized split panes');
  if(keepOpen){console.log('OVERFLOW PREVIEW READY');await new Promise(()=>{});}
  await click('.session-tab.active [data-close-tab]');await until(()=>applicationService.sessions.size===0);window.setSize(...originalSize);await new Promise(r=>setTimeout(r,150));
 };

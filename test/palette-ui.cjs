@@ -18,7 +18,11 @@ module.exports=async({window,until,pass})=>{
  await js(`(()=>{const source=document.querySelectorAll('.session-tab')[1],target=document.querySelector('.terminal-pane'),s=source.getBoundingClientRect(),t=target.getBoundingClientRect(),base={bubbles:true,pointerId:8,isPrimary:true,pointerType:'mouse',button:0};source.dispatchEvent(new PointerEvent('pointerdown',{...base,buttons:1,clientX:s.x+80,clientY:s.y+15}));document.dispatchEvent(new PointerEvent('pointerup',{...base,buttons:0,clientX:t.right-4,clientY:t.y+t.height/2}));})()`);
  await until(()=>js(`document.querySelectorAll('.terminal-pane').length===2`));
  const context=()=>js(`document.querySelector('.session-tab.active').dispatchEvent(new MouseEvent('contextmenu',{bubbles:true,clientX:450,clientY:45}))`);
- for(const theme of ['green','light','dark','kaku-light','kaku-dark']){
+ await context();await click('[data-menu-action="settings"]');
+ assert.deepEqual(await js(`Array.from(document.querySelector('#terminal-settings').elements.theme.options,o=>[o.value,o.textContent])`),[['dark','Dark'],['light','Light'],['kaku-light','Kaku Light'],['kaku-dark','Kaku Dark']]);
+ assert.equal(await js(`document.querySelector('#terminal-settings').elements.theme.value`),'dark','legacy green theme displays as Dark');
+ await click('#cancel-settings');
+ for(const theme of ['dark','light','kaku-light','kaku-dark']){
   await context();await click('[data-menu-action="settings"]');
   await js(`(()=>{const f=document.querySelector('#terminal-settings');f.elements.theme.value=${JSON.stringify(theme)};f.elements.theme.dispatchEvent(new Event('change',{bubbles:true}));})()`);
   await until(()=>js(`document.body.dataset.terminalTheme===${JSON.stringify(theme)}`));
@@ -36,10 +40,10 @@ module.exports=async({window,until,pass})=>{
  await click('#new-tab');await click('#new-local-session');await until(()=>js(`document.querySelectorAll('.session-tab').length===2`));
  assert.equal(await color('.xterm-viewport'),'rgb(21, 20, 27)','new terminal inherits Kaku Dark');
  await click('.session-tab.active [data-close-tab]');
- await context();await click('[data-menu-action="settings"]');await js(`(()=>{const f=document.querySelector('#terminal-settings');f.elements.theme.value='green';f.requestSubmit();})()`);await until(()=>js(`!document.querySelector('#modal').open`));
+ await context();await click('[data-menu-action="settings"]');await js(`(()=>{const f=document.querySelector('#terminal-settings');f.elements.theme.value='dark';f.requestSubmit();})()`);await until(()=>js(`!document.querySelector('#modal').open`));
  await click('[data-close-tab]');await click('[data-view="hosts"]');
  const ratios=await js(`(()=>{const v=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim(),l=c=>{const a=c.match(/\\w\\w/g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return a[0]*.2126+a[1]*.7152+a[2]*.0722;},ratio=(a,b)=>{const x=l(a),y=l(b);return (Math.max(x,y)+.05)/(Math.min(x,y)+.05)};return {text:ratio(v('--text'),v('--canvas')),secondary:ratio(v('--muted'),v('--selection')),button:ratio('#ffffff',v('--accent')),terminal:ratio(v('--terminal-text'),v('--terminal-bg')),terminalSecondary:ratio(v('--terminal-muted'),v('--terminal-surface')),focus:ratio(v('--terminal-accent'),v('--terminal-bg'))};})()`);
  for(const [name,ratio]of Object.entries(ratios))assert.ok(ratio>=4.5,name+' contrast '+ratio);
  fs.writeFileSync(path.join(__dirname,'../logs/findmy-contrast.json'),JSON.stringify(ratios,null,2));
- pass('Five palettes including Kaku Light/Dark, automatic theme saving, live split updates, new terminal inheritance and contrast');
+ pass('Four palettes including Kaku Light/Dark, automatic theme saving, live split updates, new terminal inheritance and contrast');
 };

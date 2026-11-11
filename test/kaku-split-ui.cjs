@@ -41,6 +41,6 @@ module.exports=async({window,until,pass,keepOpen=false})=>{
  }
  pass('Kaku continuous canvas: three live panes, visible connection names without outer frames or title bars, 1px horizontal/vertical separators and working resize');
  if(keepOpen)return;
- await theme('green');assert.equal(await js(`getComputedStyle(document.querySelector('.terminal-pane')).borderRadius`),'10px','original theme keeps its layout');
+ await theme('dark');assert.equal(await js(`getComputedStyle(document.querySelector('.terminal-pane')).borderRadius`),'10px','original theme keeps its layout');
  await click('.session-tab.active [data-close-tab]');await click('[data-view="hosts"]');
 };

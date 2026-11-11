@@ -1,6 +1,6 @@
 {
   "name": "zawo",
-  "version": "1.17.5",
+  "version": "1.17.6",
   "description": "A private local SSH and terminal workspace",
   "author": "Zawo",
   "private": true,
