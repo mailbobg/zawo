@@ -18,6 +18,8 @@ module.exports=async({window,until,pass,keepOpen=false})=>{
   await theme(value);
   const styles=await js(`(()=>{const panes=[...document.querySelectorAll('.terminal-pane')].map(p=>{const s=getComputedStyle(p),h=p.querySelector('.pane-header');return {border:s.borderTopWidth,radius:s.borderRadius,header:getComputedStyle(h).position,label:getComputedStyle(h.querySelector('.pane-label')).display};});const dividers=[...document.querySelectorAll('.split-divider')].map(d=>{const s=getComputedStyle(d,'::after');return {direction:d.classList.contains('row')?'row':'column',width:s.width,height:s.height,color:s.backgroundColor};});return {panes,dividers};})()`);
   for(const p of styles.panes)assert.deepEqual(p,{border:'0px',radius:'0px',header:'absolute',label:'none'});
+  const dragAreas=await js(`Array.from(document.querySelectorAll('.terminal-pane')).map(p=>{const h=p.querySelector('.pane-header'),r=h.getBoundingClientRect(),pane=p.getBoundingClientRect(),text=p.querySelector('.xterm-screen').getBoundingClientRect();return {fullWidth:Math.abs(r.width-pane.width)<1,clearOfText:r.bottom<=text.top,leftHit:document.elementFromPoint(r.left+12,r.top+8)===h,centerHit:document.elementFromPoint(r.left+r.width/2,r.top+8)===h};})`);
+  for(const area of dragAreas)assert.deepEqual(area,{fullWidth:true,clearOfText:true,leftHit:true,centerHit:true});
   assert.equal(styles.dividers.length,2);
   assert.ok(await js(`Array.from(document.querySelectorAll('.workspace-split')).every(e=>getComputedStyle(e).overflow==='visible')`),'nested divider joins must not be clipped');
   assert.equal(await js(`getComputedStyle(document.querySelector('.split-divider.column'),'::after').left`),'-5px','horizontal line reaches the vertical midpoint');

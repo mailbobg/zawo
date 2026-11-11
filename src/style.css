@@ -554,3 +554,10 @@ body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split.row>.workspace
 body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split.column>.workspace-split.row:first-child>.split-divider.row:after {bottom:-5px}
 body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split.column>.workspace-split.row:last-child>.split-divider.row:after {top:-5px}
 body[data-terminal-theme^=kaku-] #terminal-stage .workspace-split {overflow:visible}
+
+/* The empty top strip is the drag handle; xterm text begins below it. */
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header {top:0;left:0;right:0;width:auto;height:24px;min-height:24px;cursor:grab}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:active {cursor:grabbing}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:focus-visible {outline:0}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-actions {position:absolute;right:4px;top:0}
+body[data-terminal-theme^=kaku-] #terminal-stage .terminal-mount {padding-top:28px}

@@ -1,6 +1,6 @@
 {
   "name": "zawo",
-  "version": "1.17.1",
+  "version": "1.17.2",
   "description": "A private local SSH and terminal workspace",
   "author": "Zawo",
   "private": true,
@@ -11,7 +11,7 @@
     "test": "npm run test:core && electron . --self-test",
     "package": "npm run icon && npm run build && electron-builder --mac dir --arm64 && node scripts/sign-local.cjs",
     "postinstall": "node scripts/postinstall.cjs",
-    "test:core": "node --test test/store.test.cjs test/network-store.test.cjs test/local.test.cjs test/network.test.cjs test/local-browser.test.cjs test/workspace.test.cjs test/library.test.cjs test/keys.test.cjs test/files.test.cjs test/preferences.test.cjs test/reliability.test.cjs test/sftp-recovery.test.cjs test/backup.test.cjs test/migration.test.cjs test/autosave.test.cjs test/editor-drafts.test.cjs test/browser-policy.test.cjs test/terminal-web-links.test.cjs test/shortcuts.test.cjs test/browser-cli.test.cjs test/agent-integrations.test.cjs",
+    "test:core": "node --test test/store.test.cjs test/network-store.test.cjs test/local.test.cjs test/network.test.cjs test/local-browser.test.cjs test/workspace.test.cjs test/library.test.cjs test/keys.test.cjs test/files.test.cjs test/preferences.test.cjs test/reliability.test.cjs test/sftp-recovery.test.cjs test/backup.test.cjs test/migration.test.cjs test/autosave.test.cjs test/editor-drafts.test.cjs test/browser-policy.test.cjs test/terminal-web-links.test.cjs test/shortcuts.test.cjs test/browser-cli.test.cjs test/agent-integrations.test.cjs test/terminal-color-sync.test.cjs",
     "icon": "node scripts/icon.cjs",
     "test:browser": "npm run build && electron . --browser-test",
     "package:release": "npm run icon && npm run build && electron-builder --mac dir --arm64 --publish never --config.directories.output=dist/release && node scripts/sign-release.cjs",
