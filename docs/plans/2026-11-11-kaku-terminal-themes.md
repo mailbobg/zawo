@@ -12,4 +12,5 @@ Validation: preference restart persistence and unknown-value rejection; UI tests
 - Native mouse clicks in an isolated Electron profile: selected both Kaku themes, closed/reopened Settings and confirmed automatic persistence. ANSI-colored shell output, Chinese text and focused bar cursor were inspected visually.
 - `npm run package:release`: Developer ID signing and deep/strict codesign verification passed.
 - The signed 1.17.0 application launched with `--screenshot` in an isolated capture profile and produced `shots/kaku-release-startup.png`.
-- Production 1.16.2 still has three active local terminal sessions and has not been restarted.
+- User authorized immediate installation. Installed 1.17.0 after quitting 1.16.2; bundle signature and app.asar match verified. Installation launched normally without a Keychain prompt. Native mouse/keyboard verification selected Kaku Light and ran a real colored shell command; preferences.json confirms the saved choice. Old bundle retained under artifacts/upgrade-1.17.0-20261111-131852.
+- App and DMG notarization accepted; tickets stapled and Gatekeeper accepted both. Release: dist/release/Zawo-1.17.0-arm64.dmg.
