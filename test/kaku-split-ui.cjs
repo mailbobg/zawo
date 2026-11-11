@@ -17,7 +17,8 @@ module.exports=async({window,until,pass,keepOpen=false})=>{
  for(const value of ['kaku-dark','kaku-light']){
   await theme(value);
   const styles=await js(`(()=>{const panes=[...document.querySelectorAll('.terminal-pane')].map(p=>{const s=getComputedStyle(p),h=p.querySelector('.pane-header');return {border:s.borderTopWidth,radius:s.borderRadius,header:getComputedStyle(h).position,label:getComputedStyle(h.querySelector('.pane-label')).display};});const dividers=[...document.querySelectorAll('.split-divider')].map(d=>{const s=getComputedStyle(d,'::after');return {direction:d.classList.contains('row')?'row':'column',width:s.width,height:s.height,color:s.backgroundColor};});return {panes,dividers};})()`);
-  for(const p of styles.panes)assert.deepEqual(p,{border:'0px',radius:'0px',header:'absolute',label:'none'});
+  for(const p of styles.panes)assert.deepEqual(p,{border:'0px',radius:'0px',header:'absolute',label:'block'});
+  assert.ok(await js(`Array.from(document.querySelectorAll('.terminal-pane')).every(p=>{const h=p.querySelector('.pane-header'),l=h.querySelector('.pane-label');return l.textContent.length>0&&h.title===l.textContent&&getComputedStyle(l).textOverflow==='ellipsis';})`),'all pane names are visible with full-name hover text');
   const dragAreas=await js(`Array.from(document.querySelectorAll('.terminal-pane')).map(p=>{const h=p.querySelector('.pane-header'),r=h.getBoundingClientRect(),pane=p.getBoundingClientRect(),text=p.querySelector('.xterm-screen').getBoundingClientRect();return {fullWidth:Math.abs(r.width-pane.width)<1,clearOfText:r.bottom<=text.top,leftHit:document.elementFromPoint(r.left+12,r.top+8)===h,centerHit:document.elementFromPoint(r.left+r.width/2,r.top+8)===h};})`);
   for(const area of dragAreas)assert.deepEqual(area,{fullWidth:true,clearOfText:true,leftHit:true,centerHit:true});
   assert.equal(styles.dividers.length,2);
@@ -38,7 +39,7 @@ module.exports=async({window,until,pass,keepOpen=false})=>{
   await js('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
   fs.writeFileSync(path.join(__dirname,'../shots/'+value+'-seamless-split.png'),(await window.webContents.capturePage()).toPNG());
  }
- pass('Kaku continuous canvas: three live panes, no outer frames or title rows, 1px horizontal/vertical separators and working resize');
+ pass('Kaku continuous canvas: three live panes, visible connection names without outer frames or title bars, 1px horizontal/vertical separators and working resize');
  if(keepOpen)return;
  await theme('green');assert.equal(await js(`getComputedStyle(document.querySelector('.terminal-pane')).borderRadius`),'10px','original theme keeps its layout');
  await click('.session-tab.active [data-close-tab]');await click('[data-view="hosts"]');

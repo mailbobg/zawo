@@ -561,3 +561,9 @@ body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:active {cursor:gra
 body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:focus-visible {outline:0}
 body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-actions {position:absolute;right:4px;top:0}
 body[data-terminal-theme^=kaku-] #terminal-stage .terminal-mount {padding-top:28px}
+
+/* Identify every connection without adding a boxed title bar. */
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header>.pane-label {display:block;position:absolute;left:12px;right:28px;top:0;height:24px;line-height:24px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500;color:var(--terminal-muted);pointer-events:none}
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:hover>.pane-label,
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:focus-within>.pane-label,
+body[data-terminal-theme^=kaku-] #terminal-stage .pane-header:has([aria-pressed=true])>.pane-label {right:170px}
