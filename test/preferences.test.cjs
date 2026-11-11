@@ -1,3 +1,13 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const os=require('node:os');const path=require('node:path');
 test('preferences persist validated settings, snippets and layout templates without terminal content',t=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'harbor-prefs-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const {Preferences}=require('../src/preferences.cjs');const p=new Preferences(dir);p.settings({fontSize:18,theme:'light',scrollback:10000});assert.throws(()=>p.settings({fontSize:500}));const s=p.saveSnippet({name:'Uptime',command:'uptime'});const w=p.saveWorkspace({name:'Pair',panes:[{id:'a',type:'local',label:'Local'},{id:'b',type:'ssh',hostId:'host',label:'Server'}],layout:{direction:'row',ratio:.4,a:'a',b:'b'}});const fresh=new Preferences(dir).snapshot();assert.equal(fresh.settings.fontSize,18);assert.equal(fresh.snippets[0].command,'uptime');assert.equal(fresh.workspaces[0].layout.ratio,.4);assert.throws(()=>p.saveWorkspace({name:'Broken',panes:w.panes,layout:'missing'}));assert.throws(()=>p.saveWorkspace({name:'Duplicate',panes:w.panes,layout:{direction:'row',ratio:.5,a:'a',b:'a'}}));p.deleteSnippet(s.id);assert.equal(p.snapshot().snippets.length,0);});
 test('event log is bounded, persistent and does not accept terminal content fields',t=>{const dir=fs.mkdtempSync(path.join(os.tmpdir(),'harbor-log-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));const {Preferences}=require('../src/preferences.cjs');const p=new Preferences(dir);p.event({type:'connection',message:'Connected to fixture',terminalContent:'DO-NOT-STORE'});assert.ok(!fs.readFileSync(p.file,'utf8').includes('DO-NOT-STORE'));assert.equal(new Preferences(dir).snapshot().events.length,1);assert.throws(()=>p.event({type:'terminal-output',message:'secret'}));p.clearEvents();assert.equal(new Preferences(dir).snapshot().events.length,0);});
+
+test('Kaku palettes persist across restart and reject unknown themes',t=>{
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'zawo-theme-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+ const {Preferences}=require('../src/preferences.cjs');
+ for(const theme of ['kaku-light','kaku-dark','green','dark','light']){
+  new Preferences(dir).settings({theme});assert.equal(new Preferences(dir).snapshot().settings.theme,theme);
+ }
+ assert.throws(()=>new Preferences(dir).settings({theme:'unknown'}));
+ assert.equal(new Preferences(dir).snapshot().settings.theme,'light');
+});

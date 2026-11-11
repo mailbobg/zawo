@@ -36,6 +36,8 @@ The project began as an experiment using **[Craft Anything](https://github.com/s
 | Commands & credentials | Save snippets, reuse keys, inspect known hosts and connection logs, and explicitly enable input broadcasting to a workspace |
 | Backup & migration | Export and restore encrypted configuration backups, import / export host JSON and migrate OpenSSH configuration |
 
+Choose **Zawo → Settings… (⌘,)** → **Theme** for Kaku Light (cream) or Kaku Dark (purple-black), alongside the original palettes. Theme changes save automatically and apply to existing and new terminal panes. Colors are adapted from [Kaku](https://github.com/tw93/Kaku); see the [MIT notice](docs/KAKU-LICENSE.txt).
+
 <a id="installation"></a>
 
 ## Installation

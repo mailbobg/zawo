@@ -36,6 +36,8 @@ Zawo 将主机管理、多终端分屏、SFTP 文件传输、端口转发和右�
 | 命令与凭据 | 保存 Snippets，复用密钥，查看 Known Hosts 和连接日志；可显式开启工作空间广播输入 |
 | 备份与迁移 | 加密配置备份与恢复、主机 JSON 导入 / 导出、OpenSSH 配置迁移 |
 
+在 **Zawo → Settings…（⌘,）→ Theme** 中选择 Kaku Light（奶油白）或 Kaku Dark（紫黑色），原有配色仍然保留。主题切换自动保存，并同步到已有和新建终端。配色参考 [Kaku](https://github.com/tw93/Kaku)，附有 [MIT 许可声明](docs/KAKU-LICENSE.txt)。
+
 <a id="installation"></a>
 
 ## 安装

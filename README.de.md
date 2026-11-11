@@ -36,6 +36,8 @@ Das Projekt begann als Versuch, **mit [Craft Anything](https://github.com/storyt
 | Befehle & Zugangsdaten | Befehlsschnipsel speichern, Schlüssel wiederverwenden, bekannte Hosts und Verbindungsprotokolle einsehen sowie die gemeinsame Eingabe für einen Arbeitsbereich gezielt aktivieren |
 | Sicherung & Migration | Verschlüsselte Konfigurationssicherungen exportieren und wiederherstellen, Hosts als JSON importieren / exportieren und OpenSSH-Konfigurationen übernehmen |
 
+Unter **Zawo → Settings… (⌘,) → Theme** stehen Kaku Light (cremefarben) und Kaku Dark (violett-schwarz) neben den bisherigen Farbschemata zur Auswahl. Änderungen werden automatisch gespeichert und gelten für bestehende und neue Terminals. Die Farben basieren auf [Kaku](https://github.com/tw93/Kaku); siehe [MIT-Lizenz](docs/KAKU-LICENSE.txt).
+
 <a id="installation"></a>
 
 ## Installation

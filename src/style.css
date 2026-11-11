@@ -501,3 +501,22 @@ body.browser-expanded[data-view=terminal] .topbar {background:var(--canvas)}
 #cli-activation textarea{padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:var(--hover);color:var(--text)}
 
 #agent-integrations p{line-height:1.6;margin:12px 0}#agent-integration-error:empty{display:none}.integration-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)}.integration-row>div:first-child{min-width:0}.integration-row strong,.integration-row span,.integration-row small{display:block}.integration-row span{font-size:12px;color:var(--muted);margin:4px 0}.integration-row small{font:11px/1.5 Menlo,monospace;overflow-wrap:anywhere;color:var(--muted)}.integration-actions{display:flex;gap:10px;flex-shrink:0}.integration-note{color:var(--muted);font-size:12px}#agent-integrations details{margin-top:18px}#agent-integrations summary{cursor:pointer;font-weight:600}#agent-rules-preview{max-height:180px;overflow:auto}
+
+/* Kaku terminal palettes. Library/sidebar materials retain their own theme. */
+body[data-terminal-theme=kaku-light] {
+ --terminal-bg:#fffcf0; --terminal-surface:#fffcf0; --terminal-hover:#e8e6db;
+ --terminal-text:#100f0f; --terminal-muted:#4a4946; --terminal-border:#dddbcf;
+ --terminal-accent:#343331; --terminal-selection:#e8e6db;
+}
+body[data-terminal-theme=kaku-dark] {
+ --terminal-bg:#15141b; --terminal-surface:#1f1d28; --terminal-hover:#29263c;
+ --terminal-text:#d5d4d6; --terminal-muted:#a09ba8; --terminal-border:#29263c;
+ --terminal-accent:#8e6ad9; --terminal-selection:#574370;
+}
+body[data-view=terminal][data-terminal-theme^=kaku-] .session-tab {background:var(--terminal-bg)}
+body[data-view=terminal][data-terminal-theme^=kaku-] .session-tab.active {background:var(--terminal-hover);color:var(--terminal-text)}
+body[data-view=terminal][data-terminal-theme^=kaku-] .session-tab:hover {background:var(--terminal-hover)}
+#theme-preview {border-radius:12px;padding:18px;margin:12px 0;font:13px/1.6 'SFMono-Regular',Menlo,monospace}
+.theme-cursor {display:inline-block;width:2px;height:1em;margin-left:4px;vertical-align:-2px}
+.theme-swatches {display:flex;gap:6px;margin-top:12px}
+.theme-swatches i {width:20px;height:10px;border-radius:3px}
