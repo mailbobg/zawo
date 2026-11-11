@@ -46,7 +46,7 @@ Choose **Zawo → Settings… (⌘,)** → **Theme** for Kaku Light (cream) or K
 2. Open the DMG and drag **Zawo** into **Applications**.
 3. Launch Zawo. Choose **This Mac** for a local terminal or **New host** to add an SSH connection.
 
-The published **1.16.2** DMG is signed with Developer ID and notarized by Apple. A SHA-256 checksum file is included.
+The published **1.17.6** DMG is signed with Developer ID and notarized by Apple. A SHA-256 checksum file is included.
 
 Packages currently target **Apple Silicon Macs**. Quit Zawo before upgrading; running terminal sessions will end. The application interface is currently in English; the language links above switch this documentation.
 

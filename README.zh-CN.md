@@ -46,7 +46,7 @@ Zawo 将主机管理、多终端分屏、SFTP 文件传输、端口转发和右�
 2. 打开 DMG，将 **Zawo** 拖入 **Applications（应用程序）**。
 3. 启动 Zawo，选择 **This Mac** 打开本地终端，或通过 **New host** 添加 SSH 连接。
 
-已发布的 **1.16.2** DMG 使用 Developer ID 签名并通过 Apple 公证，同时提供 SHA-256 校验文件。
+已发布的 **1.17.6** DMG 使用 Developer ID 签名并通过 Apple 公证，同时提供 SHA-256 校验文件。
 
 当前安装包适用于 **Apple 芯片 Mac**。升级前退出 Zawo，正在运行的终端会话会结束。应用界面目前为英文；顶部语言链接用于切换本文档。
 

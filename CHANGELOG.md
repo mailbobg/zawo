@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.17.6
+
+Changes since the previous published release, 1.16.2:
+
+- Adds Kaku Light and Kaku Dark with automatic saving and live theme switching.
+- Uses seamless Kaku split panes with thin internal dividers, full-width top drag areas, and visible connection names.
+- Improves text contrast, cursor appearance, and cached input backgrounds when switching themes.
+- Fixes terminal grid sizing so long output does not clip the final prompt or cursor, including in resized split panes.
+- Removes the duplicate Zawo dark menu item while preserving compatibility with saved preferences and backups.
+- Adds English, Chinese, and German READMEs, with English as the default.
+
+Validation: 81 core tests and 62 application integration checks passed. The app and Apple Silicon DMG were Developer ID signed, notarized, stapled, and verified with Gatekeeper. The installed theme menu and long-output cursor behavior were checked in real local terminals.
+
 ## 1.16.2
 
 - Closing the browser sidebar releases all webpage instances and renderer processes.

@@ -46,7 +46,7 @@ Unter **Zawo → Settings… (⌘,) → Theme** stehen Kaku Light (cremefarben) 
 2. Öffne die DMG-Datei und ziehe **Zawo** in den Ordner **Applications / Programme**.
 3. Starte Zawo. Wähle **This Mac** für ein lokales Terminal oder **New host**, um eine SSH-Verbindung anzulegen.
 
-Die veröffentlichte DMG-Datei für **1.16.2** ist mit Developer ID signiert und von Apple notarisiert. Eine Datei mit der SHA-256-Prüfsumme liegt ebenfalls bei.
+Die veröffentlichte DMG-Datei für **1.17.6** ist mit Developer ID signiert und von Apple notarisiert. Eine Datei mit der SHA-256-Prüfsumme liegt ebenfalls bei.
 
 Die Installationspakete sind derzeit für **Macs mit Apple Silicon** verfügbar. Beende Zawo vor einem Upgrade; laufende Terminalsitzungen werden dabei beendet. Die Programmoberfläche ist derzeit englischsprachig. Die Sprachlinks oben wechseln die Dokumentation.
 
